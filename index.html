@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adentro y afuera: cómo la IA trabaja en las dos fronteras de tu empresa — Ricardo Chen · IA2 Latam</title>
+<meta property="og:title" content="Adentro y afuera — Charla IA2 Latam · Ricardo Chen">
+<meta property="og:description" content="Dos agentes de IA en vivo: uno atiende a tus clientes, otro a tu equipo. Prueba el agente en la misma página.">
+<meta property="og:type" content="website">
+<meta name="robots" content="noindex">
+<meta name="description" content="Propuesta de charla para IA2 Latam. Dos agentes de IA en vivo: uno atiende a tus clientes, otro le resuelve el día a día a tu equipo. Prueba el agente aquí mismo.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: { extend: {
+    colors: { electric:'#1E3A8A', cyan:'#2563EB', muted:'#475467', edge:'#E4E7EE' },
+    borderRadius: { '2xl':'16px' },
+    fontFamily: { sans:['Inter','system-ui','sans-serif'] }
+  } }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  body { background:#fff; color:#111827; overflow-x:hidden; }
+  .card { background:#fff; border:1px solid #E4E7EE; border-radius:16px; box-shadow:0 10px 30px -18px rgba(15,23,42,.22),0 2px 8px rgba(15,23,42,.04); }
+  .txt-block { line-height:1.75; }
+  .grad-text { background:linear-gradient(90deg,#1E3A8A,#2563EB); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .eyebrow { text-transform:uppercase; letter-spacing:.15em; font-weight:700; font-size:.72rem; color:#1E3A8A; }
+  .ico-tile { width:52px; height:52px; border-radius:14px; background:linear-gradient(150deg,#EEF3FF 0%,#DCE6FD 100%); border:1px solid #D8E3FA; }
+  .ico-tile.dk { background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.20); box-shadow:none; }
+  .step-dot { width:40px; height:40px; border-radius:999px; background:linear-gradient(135deg,#1E3A8A,#2563EB); color:#fff; font-weight:900; font-size:.72rem; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(30,58,138,.28); flex:none; }
+  .step-line { position:absolute; top:20px; left:0; right:0; height:2px; background:linear-gradient(90deg,rgba(30,58,138,.08),rgba(37,99,235,.35),rgba(30,58,138,.08)); z-index:0; }
+  .btn-primary { background:linear-gradient(90deg,#1E3A8A,#2563EB); color:#fff; border-radius:12px; box-shadow:0 8px 22px rgba(30,58,138,.30); }
+  .panel-dark { background:linear-gradient(160deg,#0F172A 0%,#111827 100%); }
+  .split-panel { border-radius:20px; border:1px solid #E4E7EE; box-shadow:0 20px 50px -24px rgba(15,23,42,.28); }
+  .depth-soft { box-shadow:0 18px 45px -22px rgba(15,23,42,.28),0 4px 14px rgba(15,23,42,.05); }
+  .ico { display:inline-flex; align-items:center; justify-content:center; }
+  .ico svg { width:100%; height:100%; }
+  .press-card { border-radius:14px; border:1px solid #E4E7EE; background:#fff; box-shadow:0 8px 24px rgba(15,23,42,.07); overflow:hidden; }
+  .press-media { position:relative; width:100%; overflow:hidden; background:#F1F3F8; }
+  .press-media img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .press-caption { padding:.7rem .9rem .85rem; }
+  .cap-title { font-size:.82rem; font-weight:800; color:#111827; line-height:1.28; }
+  .cap-sub { font-size:.72rem; color:#475467; margin-top:.2rem; line-height:1.35; }
+  /* chat panel */
+  #chat-fab { position:fixed; right:1.15rem; bottom:1.15rem; z-index:90; }
+  #chat-fab .fab-btn { display:flex; align-items:center; gap:.55rem; background:linear-gradient(135deg,#1E3A8A,#2563EB); color:#fff; border:none; border-radius:999px; padding:.8rem 1.15rem; font-weight:700; font-size:.9rem; box-shadow:0 12px 30px rgba(30,58,138,.4); cursor:pointer; }
+  #chat-overlay { position:fixed; inset:0; z-index:100; background:rgba(15,23,42,.55); backdrop-filter:blur(3px); display:none; align-items:flex-end; justify-content:flex-end; padding:1.15rem; }
+  #chat-overlay.open { display:flex; }
+  @media (max-width:640px){ #chat-overlay{ padding:0; } }
+  #chat-panel { width:100%; max-width:390px; height:min(78vh,600px); background:#fff; border-radius:1.15rem; border:1px solid #E4E7EE; box-shadow:0 30px 80px rgba(15,23,42,.35); display:flex; flex-direction:column; overflow:hidden; }
+  @media (max-width:640px){ #chat-panel{ max-width:none; height:100vh; height:100dvh; border-radius:0; } }
+  .chat-bubble { max-width:82%; padding:.68rem .92rem; border-radius:16px; font-size:.885rem; line-height:1.55; }
+  .chat-bot { background:#F1F4F9; color:#111827; border-bottom-left-radius:4px; }
+  .chat-user { background:#1E3A8A; color:#fff; border-bottom-right-radius:4px; }
+  .chat-rich strong { color:#1E3A8A; font-weight:800; }
+  .chat-user.chat-rich strong { color:#fff; }
+  .chat-p { margin:0 0 .35rem; } .chat-p:last-child { margin-bottom:0; }
+  .chat-ul { margin:.2rem 0 .35rem; padding-left:1.05rem; list-style:disc; }
+  .chat-ul li { margin:.15rem 0; }
+  .chat-typing { display:inline-flex; gap:3px; align-items:center; }
+  .chat-typing span { width:6px; height:6px; border-radius:50%; background:#94A3B8; animation:blink 1.2s infinite; }
+  .chat-typing span:nth-child(2){ animation-delay:.2s; } .chat-typing span:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink { 0%,80%,100%{ opacity:.25 } 40%{ opacity:1 } }
+  .log-scroll::-webkit-scrollbar { width:8px; } .log-scroll::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:8px; }
+
+  /* Lightbox de fotos */
+  .zoomable { cursor: zoom-in; position:relative; }
+  .zoomable::after { content:'⤢'; position:absolute; top:.4rem; right:.4rem; width:1.6rem; height:1.6rem; border-radius:999px; background:rgba(15,23,42,.72); color:#fff; font-size:.85rem; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s ease; pointer-events:none; }
+  .zoomable:hover::after, .zoomable:focus-visible::after { opacity:1; }
+  .zoomable img { transition:transform .3s ease; }
+  .zoomable:hover img { transform:scale(1.04); }
+  #lightbox { position:fixed; inset:0; z-index:120; background:rgba(9,14,25,.94); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; padding:1.5rem; }
+  #lightbox.open { display:flex; }
+  #lightbox img { max-width:min(96vw,1500px); max-height:82vh; width:auto; height:auto; object-fit:contain; border-radius:12px; box-shadow:0 30px 80px rgba(0,0,0,.6); background:#fff; }
+  #lightbox .lb-cap { position:absolute; bottom:1.25rem; left:50%; transform:translateX(-50%); color:#E5E7EB; font-size:.85rem; text-align:center; max-width:90vw; line-height:1.4; }
+  #lightbox .lb-close { position:absolute; top:1rem; right:1.1rem; color:#fff; font-size:2rem; line-height:1; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:999px; width:2.6rem; height:2.6rem; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  #lightbox .lb-nav { position:absolute; top:50%; transform:translateY(-50%); color:#fff; font-size:1.7rem; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); border-radius:999px; width:2.8rem; height:2.8rem; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  #lightbox .lb-prev { left:1rem; } #lightbox .lb-next { right:1rem; }
+  @media (max-width:640px){ #lightbox .lb-nav{ display:none; } #lightbox img{ max-height:74vh; } }
+  @media print { #lightbox, .zoomable::after { display:none !important; } }
+  @page { size: A4; margin: 9mm; }
+  @media print {
+    .no-print { display:none !important; }
+    #chat-fab, #chat-overlay, #lightbox, .fab-btn, .lb-close, .lb-nav { display:none !important; }
+    .page-block { break-inside: avoid; page-break-inside: avoid; }
+    .pdf-2col { grid-template-columns: 1fr 1fr !important; }
+    .pdf-3col { grid-template-columns: repeat(3,1fr) !important; }
+    .pdf-bio { grid-template-columns: 0.5fr 1.5fr !important; }
+    main { padding-left:0 !important; padding-right:0 !important; max-width:none !important; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pt-7 { padding-top:6px !important; } .pt-9 { padding-top:10px !important; } .pt-10 { padding-top:10px !important; }
+    .mt-5 { margin-top:12px !important; } .mt-8 { margin-top:12px !important; } .mt-7 { margin-top:10px !important; }
+  }
+</style>
+</head>
+<body class="font-sans antialiased" id="top">
+
+<main class="max-w-[1080px] mx-auto px-6 sm:px-8 py-9">
+
+  <!-- HEADER -->
+  <header class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-5 border-b-2 border-[#1E3A8A]">
+    <div>
+      <p class="eyebrow mb-2">Propuesta de charla · IA2 Latam</p>
+      <h1 class="text-[clamp(1.6rem,3.2vw,2.3rem)] font-extrabold leading-[1.14] tracking-[-0.02em] text-[#0F172A]">
+        Adentro y afuera: <span class="grad-text">cómo la IA trabaja en las dos fronteras</span> de tu empresa
+      </h1>
+      <p class="text-muted mt-2.5 text-[15px]">45 minutos · Charla demostrativa con dos agentes de IA en vivo · Español</p>
+    </div>
+    <div class="shrink-0 flex sm:flex-col gap-2 text-[12.5px] font-semibold">
+      <span class="border border-edge bg-white rounded-full px-3 py-1.5 text-[#1F2937] shadow-sm">Participación sin costo</span>
+      <span class="border border-edge bg-white rounded-full px-3 py-1.5 text-[#1F2937] shadow-sm">Fecha: a definir por el comité</span>
+    </div>
+  </header>
+
+  <!-- PLANTEAMIENTO + TAKEAWAYS -->
+  <section class="grid lg:grid-cols-[1fr_1fr] gap-7 pt-7 page-block items-start pdf-2col">
+    <div>
+      <p class="eyebrow mb-2.5">El planteamiento</p>
+      <p class="text-[16.5px] leading-[1.6] text-[#0F172A] font-semibold">Tu negocio tiene dos frentes que pierden plata todos los días. Afuera, alguien preguntó y nadie contestó a tiempo. Adentro, tu equipo perdió media hora buscando un documento que existe.</p>
+      <p class="text-muted mt-3.5 txt-block text-[14.5px]">En esta sesión vas a ver dos agentes de IA trabajando en vivo: uno atiende clientes —responde, califica, agenda— y otro le resuelve el día a día a tu equipo sobre tu propia información interna.</p>
+      <p class="text-muted mt-3 txt-block text-[14.5px]">Ricardo Chen, cofundador de Wisy, muestra el agente que tu equipo no tiene todavía — y lo que pasa cuando le das acceso a tu información interna.</p>
+    </div>
+    <div class="card depth-soft p-5">
+      <p class="eyebrow mb-3.5">Qué se lleva la audiencia</p>
+      <ol class="space-y-3.5">
+        <li class="flex gap-2.5">
+          <span class="step-dot" style="width:30px;height:30px">1</span>
+          <div><p class="font-bold text-[#0F172A] text-[14.5px] leading-tight">Los dos números que nadie mide</p><p class="text-[12.5px] text-muted mt-1 leading-snug">Lo que cuesta cada consulta sin contestar <em>y</em> las horas que se van buscando información que ya tienes.</p></div>
+        </li>
+        <li class="flex gap-2.5">
+          <span class="step-dot" style="width:30px;height:30px">2</span>
+          <div><p class="font-bold text-[#0F172A] text-[14.5px] leading-tight">Que el bot también sirve adentro</p><p class="text-[12.5px] text-muted mt-1 leading-snug">Hoy casi todos los bots son de atención al cliente. Tu equipo no tiene uno — y ahí se van las horas.</p></div>
+        </li>
+        <li class="flex gap-2.5">
+          <span class="step-dot" style="width:30px;height:30px">3</span>
+          <div><p class="font-bold text-[#0F172A] text-[14.5px] leading-tight">Una base montada una sola vez</p><p class="text-[12.5px] text-muted mt-1 leading-snug">Qué sabe cada agente, con qué permisos, y cómo se levanta el segundo sin volver a empezar. Aplicable la misma semana.</p></div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- LAS DOS FRONTERAS -->
+  <section class="pt-10 page-block">
+    <p class="eyebrow mb-1.5">Las dos fronteras</p>
+    <h2 class="text-[clamp(1.35rem,2.4vw,1.75rem)] font-extrabold tracking-[-0.02em] mb-1.5">Un agente para tus clientes. Otro para tu equipo.</h2>
+    <p class="text-muted mb-5 text-[14.5px]">No es el mismo bot haciendo dos cosas. Son dos agentes, con información distinta.</p>
+
+    <div class="grid md:grid-cols-2 gap-4 items-stretch pdf-2col">
+      <!-- AFUERA -->
+      <div class="split-panel bg-white p-5 sm:p-6">
+        <div class="flex items-center gap-3 mb-3.5">
+          <span class="ico-tile flex items-center justify-center text-[#1E3A8A]"><span class="ico w-6 h-6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg></span></span>
+          <div>
+            <p class="text-[10.5px] font-bold uppercase tracking-widest text-[#2563EB]">Frontera afuera</p>
+            <h3 class="font-extrabold text-[17px] text-[#0F172A]">El agente de clientes</h3>
+          </div>
+        </div>
+        <p class="text-[13.5px] text-muted mb-3.5">Sabe lo que cualquiera puede ver: qué vendes, horarios, cómo comprar o agendar. Responde, califica y no deja a nadie esperando.</p>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2.5"><span class="mt-0.5 w-4.5 h-4.5 rounded-full grid place-items-center bg-[#EEF3FF] text-[#2563EB] shrink-0" style="width:18px;height:18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="text-[13.5px] text-[#0F172A]">Atiende WhatsApp, Instagram y sitio web</span></li>
+          <li class="flex items-start gap-2.5"><span class="mt-0.5 rounded-full grid place-items-center bg-[#EEF3FF] text-[#2563EB] shrink-0" style="width:18px;height:18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="text-[13.5px] text-[#0F172A]">Contesta precios, horarios y citas al instante</span></li>
+          <li class="flex items-start gap-2.5"><span class="mt-0.5 rounded-full grid place-items-center bg-[#EEF3FF] text-[#2563EB] shrink-0" style="width:18px;height:18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="text-[13.5px] text-[#0F172A]">Distingue al curioso del que quiere comprar</span></li>
+        </ul>
+        <div class="mt-4 rounded-xl border border-[#E4E7EE] bg-[#F8FAFC] p-3 text-[12px] space-y-1.5">
+          <div class="max-w-[88%] bg-white border border-[#E4E7EE] rounded-xl rounded-tl-sm px-2.5 py-1.5 text-[#334155]">Hola, ¿tienen cita esta semana? Escribo desde EE.UU.</div>
+          <div class="max-w-[92%] ml-auto bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] text-white rounded-xl rounded-tr-sm px-2.5 py-1.5">¡Buenas! El diagnóstico inicial es gratis. ¿Le sirve jueves en la tarde?</div>
+          <div class="flex items-center gap-1.5 text-[10.5px] text-[#2563EB] font-semibold pt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span>Cita agendada · nadie escribió nada</div>
+        </div>
+      </div>
+
+      <!-- ADENTRO -->
+      <div class="split-panel panel-dark p-5 sm:p-6 text-white relative overflow-hidden">
+        <div class="absolute -inset-10 bg-gradient-to-tr from-[#2563EB]/20 via-transparent to-[#1E3A8A]/10 blur-3xl pointer-events-none"></div>
+        <div class="relative">
+          <div class="flex items-center gap-3 mb-3.5">
+            <span class="ico-tile dk flex items-center justify-center text-white"><span class="ico w-6 h-6"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span></span>
+            <div>
+              <p class="text-[10.5px] font-bold uppercase tracking-widest text-[#60A5FA]">Frontera adentro</p>
+              <h3 class="font-extrabold text-[17px]">El agente del equipo</h3>
+            </div>
+          </div>
+          <p class="text-[13.5px] text-gray-300 mb-3.5">Tiene su propia información interna y solo la ve tu equipo. El día a día a mano, sin hurgar en PDFs ni abrir cinco tableros.</p>
+          <ul class="space-y-2">
+            <li class="flex items-start gap-2.5"><span class="mt-0.5 rounded-full grid place-items-center bg-white/10 text-[#60A5FA] shrink-0" style="width:18px;height:18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="text-[13.5px] text-gray-100"><strong class="text-white">Normativa</strong> — “¿qué exige la norma para este caso?”</span></li>
+            <li class="flex items-start gap-2.5"><span class="mt-0.5 rounded-full grid place-items-center bg-white/10 text-[#60A5FA] shrink-0" style="width:18px;height:18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="text-[13.5px] text-gray-100"><strong class="text-white">Proyectos</strong> — “¿en qué va el proyecto Y?”</span></li>
+            <li class="flex items-start gap-2.5"><span class="mt-0.5 rounded-full grid place-items-center bg-white/10 text-[#60A5FA] shrink-0" style="width:18px;height:18px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-2.5 h-2.5"><path d="M20 6 9 17l-5-5"/></svg></span><span class="text-[13.5px] text-gray-100"><strong class="text-white">Pagos y procesos</strong> — “¿está pagado?”, “¿cómo se hace Z?”</span></li>
+          </ul>
+          <div class="mt-4 rounded-xl border border-white/15 bg-white/5 p-3 text-[12px] space-y-1.5">
+            <div class="max-w-[88%] bg-white/10 rounded-xl rounded-tl-sm px-2.5 py-1.5 text-gray-100">¿Qué documentación pide la norma para abrir un expediente nuevo?</div>
+            <div class="max-w-[92%] ml-auto bg-gradient-to-r from-[#1E3A8A] to-[#2563EB] text-white rounded-xl rounded-tr-sm px-2.5 py-1.5">Tres documentos, según el procedimiento interno v4. Te dejo el enlace y el formato.</div>
+            <div class="flex items-center gap-1.5 text-[10.5px] text-[#60A5FA] font-semibold pt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>De tu información interna · sin buscar nada</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESTRUCTURA -->
+  <section class="pt-10 page-block">
+    <p class="eyebrow mb-1.5">Cómo se reparte la sesión</p>
+    <h2 class="text-[clamp(1.35rem,2.4vw,1.75rem)] font-extrabold tracking-[-0.02em] mb-6">45 minutos, con los dos frentes en vivo</h2>
+    <div class="relative">
+      <div class="hidden md:block step-line"></div>
+      <div class="grid md:grid-cols-5 gap-5 md:gap-3">
+        <div class="relative z-10 flex md:flex-col items-start gap-2.5">
+          <div class="step-dot">0–5</div>
+          <div><p class="font-bold text-[13.5px] text-[#0F172A] leading-tight">Apertura: los dos frentes</p><p class="text-[12px] text-muted mt-1">Historia + dato de impacto</p></div>
+        </div>
+        <div class="relative z-10 flex md:flex-col items-start gap-2.5">
+          <div class="step-dot">5–12</div>
+          <div><p class="font-bold text-[13.5px] text-[#0F172A] leading-tight">Afuera: el costo de no contestar</p><p class="text-[12px] text-muted mt-1">Calculadora con números del público</p></div>
+        </div>
+        <div class="relative z-10 flex md:flex-col items-start gap-2.5">
+          <div class="step-dot">12–19</div>
+          <div><p class="font-bold text-[13.5px] text-[#0F172A] leading-tight">Adentro: las horas buscando archivos</p><p class="text-[12px] text-muted mt-1">Ejercicio en vivo</p></div>
+        </div>
+        <div class="relative z-10 flex md:flex-col items-start gap-2.5">
+          <div class="step-dot">19–24</div>
+          <div><p class="font-bold text-[13.5px] text-[#0F172A] leading-tight">El bot que tu equipo no tiene</p><p class="text-[12px] text-muted mt-1">Los bots se piensan solo para clientes</p></div>
+        </div>
+        <div class="relative z-10 flex md:flex-col items-start gap-2.5">
+          <div class="step-dot">24–45</div>
+          <div><p class="font-bold text-[13.5px] text-[#0F172A] leading-tight">Demo + cierre</p><p class="text-[12px] text-muted mt-1">El público prueba los dos agentes</p></div>
+        </div>
+      </div>
+    </div>
+    <p class="text-[13px] text-muted mt-5">Del minuto 24 al 40 el público prueba los dos agentes desde su propio teléfono. No es simulado.</p>
+  </section>
+
+  <!-- BIO + FOTOS -->
+  <section class="pt-10 page-block">
+    <div class="grid md:grid-cols-[0.55fr_1.45fr] gap-6 items-start pdf-bio">
+      <div class="pdf-portrait-wrap">
+        <div class="rounded-2xl overflow-hidden border border-edge aspect-[4/5] shadow-card zoomable pdf-portrait" tabindex="0" role="button" data-full="press/assets/ricardo_retrato.jpg" data-cap="Ricardo Chen">
+          <img src="press/assets/ricardo_retrato.jpg" alt="Ricardo Chen" class="w-full h-full object-cover object-[50%_22%]">
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow mb-1.5">Quién la da</p>
+        <h2 class="text-[clamp(1.35rem,2.4vw,1.75rem)] font-extrabold tracking-[-0.02em]">Ricardo Chen</h2>
+        <p class="mt-1 font-semibold text-[#2563EB] text-[13px]">Consultor B2B en IA Operativa · Cofundador de Wisy</p>
+        <p class="text-muted mt-3 txt-block text-[13.5px]">Cofundador de Wisy, la primera startup panameña en Silicon Valley: una empresa de investigación de mercado que usa inteligencia artificial para convertir datos de consumo en decisiones. Como consultor en IA operativa, trabaja con empresas B2B de Latinoamérica diagnosticando dónde la IA mueve la aguja de verdad, e implementando sistemas que trabajan en producción: agentes de atención a clientes y agentes internos para equipos de operación, ventas y procesos.</p>
+        <p class="text-muted mt-2 txt-block text-[13.5px]">Antes de Wisy fundó y dirigió negocios en Panamá en retail, sostenibilidad y tecnología. Ha aparecido en portada de Martes Financiero y en medios internacionales. Su enfoque es pragmático: primero mapeas el proceso, después lo automatizas.</p>
+        <div class="mt-3 flex flex-wrap gap-1.5">
+          <span class="text-[11.5px] border border-edge bg-white rounded-full px-2.5 py-1 text-[#1F2937] font-semibold shadow-sm">🏆 1er lugar · Innovación Empresarial 2020</span>
+          <span class="text-[11.5px] border border-edge bg-white rounded-full px-2.5 py-1 text-[#1F2937] font-semibold shadow-sm">🥉 3er lugar · 2017</span>
+          <span class="text-[11.5px] border border-edge bg-white rounded-full px-2.5 py-1 text-[#1F2937] font-semibold shadow-sm">🌎 Ganador Seedstars Panamá</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5 grid grid-cols-2 md:grid-cols-3 gap-3 pdf-3col">
+      <figure class="press-card">
+        <div class="press-media zoomable" tabindex="0" role="button" data-full="press/assets/premio_innovacion_2020.jpg" data-cap="1er lugar · Premio Nacional a la Innovación Empresarial 2020 · SENACYT · Redoxigen, Inc." style="aspect-ratio:4/3"><img src="press/assets/premio_innovacion_2020.jpg" alt="Premio Nacional a la Innovación Empresarial 2020 - 1er lugar"></div>
+        <figcaption class="press-caption"><p class="cap-title">1er lugar · Premio Nacional a la Innovación Empresarial 2020</p><p class="cap-sub">SENACYT · Redoxigen, Inc.</p></figcaption>
+      </figure>
+      <figure class="press-card">
+        <div class="press-media zoomable" tabindex="0" role="button" data-full="press/assets/premio_innovacion_2017.jpg" data-cap="3er lugar · Premio Nacional a la Innovación Empresarial 2017 · SENACYT · Redoxigen, Inc." style="aspect-ratio:4/3"><img src="press/assets/premio_innovacion_2017.jpg" alt="Premio Nacional a la Innovación Empresarial 2017 - 3er lugar"></div>
+        <figcaption class="press-caption"><p class="cap-title">3er lugar · Premio Nacional a la Innovación Empresarial 2017</p><p class="cap-sub">SENACYT · Redoxigen, Inc.</p></figcaption>
+      </figure>
+      <figure class="press-card">
+        <div class="press-media zoomable" tabindex="0" role="button" data-full="press/assets/martes_financiero_portada.jpg" data-cap="Martes Financiero · Portada" style="aspect-ratio:4/3"><img src="press/assets/martes_financiero_portada.jpg" alt="Portada Martes Financiero"></div>
+        <figcaption class="press-caption"><p class="cap-title">Martes Financiero</p><p class="cap-sub">Portada</p></figcaption>
+      </figure>
+      <figure class="press-card">
+        <div class="press-media zoomable" tabindex="0" role="button" data-full="press/assets/seedstars_panama_2017.jpg" data-cap="Seedstars Panamá · Ganador 2017 · Suiza" style="aspect-ratio:4/3"><img src="press/assets/seedstars_panama_2017.jpg" alt="Seedstars Panamá 2017"></div>
+        <figcaption class="press-caption"><p class="cap-title">Seedstars Panamá</p><p class="cap-sub">Ganador 2017 · Suiza</p></figcaption>
+      </figure>
+      <figure class="press-card">
+        <div class="press-media zoomable" tabindex="0" role="button" data-full="press/assets/entrevista_noticiero_nacional.jpg" data-cap="Noticiero nacional · Entrevista en TV" style="aspect-ratio:4/3"><img src="press/assets/entrevista_noticiero_nacional.jpg" alt="Entrevista en noticiero nacional"></div>
+        <figcaption class="press-caption"><p class="cap-title">Noticiero nacional</p><p class="cap-sub">Entrevista en TV</p></figcaption>
+      </figure>
+      <figure class="press-card">
+        <div class="press-media zoomable" tabindex="0" role="button" data-full="press/assets/prensa_europa_premia.jpg" data-cap="Medios internacionales · “Europa premia el ingenio local”" style="aspect-ratio:4/3"><img src="press/assets/prensa_europa_premia.jpg" alt="Europa premia el ingenio local"></div>
+        <figcaption class="press-caption"><p class="cap-title">Medios internacionales</p><p class="cap-sub">“Europa premia el ingenio local”</p></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- DETALLES -->
+  <section class="pt-9 grid sm:grid-cols-3 gap-3.5 page-block items-stretch pdf-3col">
+    <div class="card p-4">
+      <p class="eyebrow mb-2">A quién le sirve</p>
+      <ul class="text-[12.5px] text-muted space-y-1 leading-snug">
+        <li>• Dueños y directores con equipo limitado</li>
+        <li>• Operación, ventas y servicio al cliente</li>
+        <li>• RRHH y capacitación interna</li>
+        <li>• Founders decidiendo construir vs. comprar</li>
+      </ul>
+    </div>
+    <div class="card p-4">
+      <p class="eyebrow mb-2">Requerimientos técnicos</p>
+      <ul class="text-[12.5px] text-muted space-y-1 leading-snug">
+        <li>• Pantalla con HDMI</li>
+        <li>• Wi-Fi o cobertura de data</li>
+      </ul>
+    </div>
+    <div class="card p-4">
+      <p class="eyebrow mb-2">Material para asistentes</p>
+      <ul class="text-[12.5px] text-muted space-y-1 leading-snug">
+        <li>• Guía “Dos agentes vs. un bot”</li>
+        <li>• Calculadora de ROI con sus números</li>
+        <li>• 30 días de acceso a las demos</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CTA / DEMO -->
+  <section class="mt-8 rounded-[20px] panel-dark p-6 sm:p-8 text-white relative overflow-hidden page-block no-print">
+    <div class="absolute -inset-10 bg-gradient-to-tr from-[#2563EB]/25 via-transparent to-[#1E3A8A]/15 blur-3xl pointer-events-none"></div>
+    <div class="relative flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-7">
+      <div class="flex-1">
+        <p class="text-[10.5px] font-bold uppercase tracking-widest text-[#60A5FA] mb-2">Demo en vivo en esta página</p>
+        <h2 class="text-[clamp(1.2rem,2.2vw,1.6rem)] font-extrabold leading-tight">Prueba el agente tú mismo, antes de la charla.</h2>
+        <p class="text-[13.5px] text-gray-300 mt-2 max-w-lg">Es el mismo motor que se va a mostrar en escenario. Pregúntale lo que quieras: precios, horarios, o cómo responde a tu equipo.</p>
+      </div>
+      <button onclick="openChatPanelWith('Hola, quiero probar el agente en vivo.')" class="btn-primary font-bold px-7 py-3.5 text-[15px] shrink-0">Abrir el chat →</button>
+    </div>
+  </section>
+
+  <footer class="mt-7 pt-5 border-t border-edge flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[12px] text-muted">
+    <p><strong class="text-[#0F172A]">Ricardo Chen</strong> · Consultor B2B en IA Operativa · Panamá</p>
+    <p>Charla para IA2 Latam · Agentes de IA en las dos fronteras de tu empresa</p>
+  </footer>
+
+<!-- Lightbox -->
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Foto ampliada" class="no-print">
+  <button class="lb-close" type="button" aria-label="Cerrar">&times;</button>
+  <button class="lb-nav lb-prev" type="button" aria-label="Anterior">&#10094;</button>
+  <img id="lb-img" src="" alt="">
+  <button class="lb-nav lb-next" type="button" aria-label="Siguiente">&#10095;</button>
+  <p class="lb-cap" id="lb-cap"></p>
+</div>
+</main>
+
+<!-- FAB -->
+<div id="chat-fab" class="no-print">
+  <button class="fab-btn" type="button" onclick="openChatPanel()" aria-label="Abrir asistente">
+    <span>💬</span><span>Probar el agente</span>
+  </button>
+</div>
+
+<!-- Panel -->
+<div id="chat-overlay" role="dialog" aria-modal="true" aria-label="Asistente de Ricardo Chen" class="no-print">
+  <div id="chat-panel">
+    <div class="flex items-center gap-3 px-5 py-4 border-b border-[#EEF1F6] bg-[#F9FAFB]">
+      <div class="w-10 h-10 rounded-full grid place-items-center text-white font-black bg-gradient-to-br from-[#1E3A8A] to-[#2563EB] shrink-0">RC</div>
+      <div class="leading-tight flex-1">
+        <p class="font-bold text-[#0F172A] text-sm">Asistente de Ricardo Chen</p>
+        <p class="text-xs text-emerald-600 font-medium flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Demo en vivo · responde al instante</p>
+      </div>
+      <button type="button" onclick="closeChatPanel()" aria-label="Cerrar" class="text-2xl leading-none text-[#94A3B8] hover:text-[#0F172A] px-1">&times;</button>
+    </div>
+    <div id="chat-log-panel" class="log-scroll px-5 py-6 space-y-4 flex-1 overflow-y-auto bg-white"></div>
+    <form id="chat-form-panel" class="flex items-end gap-2 p-3 border-t border-[#EEF1F6] bg-[#F9FAFB]">
+      <textarea id="chat-input-panel" rows="1" placeholder="Escribe tu pregunta o tus datos…" style="line-height:1.5;min-height:3.1rem" class="flex-1 border border-edge rounded-xl px-4 py-3 resize-none max-h-32 focus:outline-none focus:border-[#2563EB]" autocomplete="off"></textarea>
+      <button type="submit" class="btn-primary font-bold px-5 py-3 shrink-0" aria-label="Enviar">Enviar</button>
+    </form>
+  </div>
+</div>
+
+<script>
+
+// ==== Motor de chat (edge: agente-chat) ====
+const CHAT_ENDPOINT = 'https://xwvaegliifpggqlmxxhu.supabase.co/functions/v1/agente-chat';
+const ORIGEN = 'agente_demo:' + location.pathname;
+
+const CHAT_BUS = { history: [], listeners: [], add(m){ this.history.push(m); this.listeners.forEach(f=>f()); }, subscribe(f){ this.listeners.push(f); } };
+const GREETING = '¡Hola! 👋 Soy el asistente de IA 24/7 de Ricardo Chen — el mismo que va a mostrar en vivo para IA2 Latam. Aquí no hay que apretar menús: pregúntame lo que quieras, como cliente o como parte de tu equipo, y mira cómo respondo. ¿De qué es tu negocio?';
+
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function formatMessage(raw){
+  const lines = escapeHtml(raw).split(/\n/); let html=''; let inList=false;
+  const inline=(t)=>t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g,'$1<em>$2</em>');
+  for (let ln of lines){ const t=ln.trim(); const b=/^[-•*]\s+(.*)$/.exec(t);
+    if(b){ if(!inList){html+='<ul class="chat-ul">';inList=true;} html+='<li>'+inline(b[1])+'</li>'; continue; }
+    if(inList){html+='</ul>';inList=false;}
+    if(t===''){html+='<div class="chat-gap"></div>';continue;}
+    html+='<p class="chat-p">'+inline(t)+'</p>'; }
+  if(inList)html+='</ul>';
+  return html;
+}
+
+function renderBubbleInto(logEl, role, text){
+  const wrap = document.createElement('div');
+  wrap.className = 'flex ' + (role === 'user' ? 'justify-end' : 'justify-start');
+  const div = document.createElement('div');
+  div.className = 'chat-bubble ' + (role === 'user' ? 'chat-user' : 'chat-bot') + ' chat-rich';
+  if (role === 'user') { div.textContent = text; } else { div.innerHTML = formatMessage(text); }
+  wrap.appendChild(div);
+  logEl.appendChild(wrap);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function createChatEngine(logEl, formEl, inputEl){
+  const sendBtn = formEl.querySelector('button[type="submit"]');
+  let busy = false;
+
+  function repaint(){
+    logEl.innerHTML = '';
+    CHAT_BUS.history.forEach(m => renderBubbleInto(logEl, m.role === 'user' ? 'user' : 'assistant', m.content));
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  CHAT_BUS.subscribe(repaint);
+  repaint();
+
+  function typing(){
+    const wrap = document.createElement('div');
+    wrap.className = 'flex justify-start';
+    wrap.innerHTML = '<div class="chat-bubble chat-bot"><span class="chat-typing"><span></span><span></span><span></span></span></div>';
+    logEl.appendChild(wrap);
+    logEl.scrollTop = logEl.scrollHeight;
+    return wrap;
+  }
+
+  async function send(text){
+    if (busy || !text.trim()) return;
+    busy = true; if (sendBtn) sendBtn.disabled = true;
+    CHAT_BUS.add({ role: 'user', content: text });
+    const t = typing();
+    try {
+      const res = await fetch(CHAT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: CHAT_BUS.history.map(m => ({ role: m.role, content: m.content })), origen: ORIGEN }),
+      });
+      const data = await res.json();
+      t.remove();
+      const reply = data.content || 'Disculpa, ¿puedes repetir eso?';
+      CHAT_BUS.add({ role: 'assistant', content: reply });
+      if (data.registered) CHAT_BUS.add({ role: 'assistant', content: '✅ ¡Gracias! Tus datos quedaron guardados. Ricardo se pondrá en contacto en breve.' });
+    } catch (e) {
+      t.remove();
+      CHAT_BUS.add({ role: 'assistant', content: 'Tuve un problema de conexión. Intenta otra vez en un momento.' });
+    } finally {
+      busy = false; if (sendBtn) sendBtn.disabled = false; inputEl.focus();
+    }
+  }
+
+  formEl.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = inputEl.value.trim();
+    if (!text) return;
+    inputEl.value = ''; inputEl.style.height = 'auto';
+    send(text);
+  });
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); formEl.requestSubmit(); }
+  });
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 128) + 'px';
+  });
+
+  return { repaint, send };
+}
+
+CHAT_BUS.add({ role: 'assistant', content: GREETING });
+
+(function(){
+  const overlay = document.getElementById('chat-overlay');
+  const panelLog = document.getElementById('chat-log-panel');
+  const panelForm = document.getElementById('chat-form-panel');
+  const panelInput = document.getElementById('chat-input-panel');
+  if (!overlay || !panelLog || !panelForm) return;
+  const panelEngine = createChatEngine(panelLog, panelForm, panelInput);
+
+  window.openChatPanel = function(){
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    panelLog.scrollTop = panelLog.scrollHeight;
+    setTimeout(() => panelInput.focus(), 150);
+  };
+  window.openChatPanelWith = function(text){
+    window.openChatPanel();
+    if (text) setTimeout(() => panelEngine.send(text), 250);
+  };
+  window.closeChatPanel = function(){
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeChatPanel(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('open')) closeChatPanel(); });
+
+  const teaserEl = document.getElementById('fab-teaser');
+  const TEASERS = [
+    '👋 Pregúntame lo que quieras',
+    '⚡ Contesto al instante, 24/7',
+    '🌐 Te respondo en tu idioma',
+    '🎯 Prueba el agente del equipo',
+    '💬 Así atiende a tus clientes',
+  ];
+  let ti = 0, teaserTimer = null, chatOpened = false;
+  function rotateTeaser(){
+    if (chatOpened || !teaserEl) return;
+    teaserEl.style.opacity = '0';
+    setTimeout(() => { ti = (ti + 1) % TEASERS.length; teaserEl.innerHTML = TEASERS[ti]; teaserEl.style.opacity = '1'; }, 400);
+  }
+  teaserTimer = setInterval(rotateTeaser, 9000);
+  const origOpen = window.openChatPanel;
+  window.openChatPanel = function(){ chatOpened = true; if (teaserTimer) clearInterval(teaserTimer); if (teaserEl) teaserEl.style.opacity = '0'; origOpen(); };
+})();
+
+
+</script>
+
+<script>
+(function(){
+  const items = [...document.querySelectorAll('.zoomable')].map(el => ({
+    el,
+    full: el.dataset.full,
+    cap: el.dataset.cap || ''
+  }));
+  if (!items.length) return;
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lb-img');
+  const cap = document.getElementById('lb-cap');
+  let idx = 0;
+
+  function show(i){
+    idx = (i + items.length) % items.length;
+    const it = items[idx];
+    img.src = it.full;
+    img.alt = it.cap;
+    cap.textContent = it.cap;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function close(){
+    lb.classList.remove('open');
+    img.src = '';
+    document.body.style.overflow = '';
+  }
+
+  items.forEach((it, i) => {
+    it.el.addEventListener('click', (e) => { e.preventDefault(); show(i); });
+    it.el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(i); }
+    });
+  });
+  lb.querySelector('.lb-close').addEventListener('click', close);
+  lb.querySelector('.lb-prev').addEventListener('click', () => show(idx - 1));
+  lb.querySelector('.lb-next').addEventListener('click', () => show(idx + 1));
+  lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+  document.addEventListener('keydown', (e) => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') show(idx - 1);
+    if (e.key === 'ArrowRight') show(idx + 1);
+  });
+})();
+</script>
+</body>
+</html>
